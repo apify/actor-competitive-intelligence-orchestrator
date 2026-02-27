@@ -7,8 +7,9 @@
 		"node": ">=18.0.0"
 	},
 	"dependencies": {
+		"@supabase/supabase-js": "^2.49.1",
 		"apify": "^3.5.2",
-		"@crawlee/cheerio": "^3.15.3"
+		"dotenv": "^17.3.1"
 	},
 	"devDependencies": {
 		"@apify/eslint-config": "^1.0.0",
