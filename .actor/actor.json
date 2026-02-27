@@ -7,24 +7,9 @@
 	"buildTag": "latest",
 	"input": "./input_schema.json",
 	"environmentVariables": {
-		"PUBLIC_SUPABASE_URL": {
-			"title": "Supabase URL",
-			"description": "Supabase project URL",
-			"type": "string",
-			"isSecret": false
-		},
-		"PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY": {
-			"title": "Supabase Publishable Key",
-			"description": "Supabase publishable default key for authentication",
-			"type": "string",
-			"isSecret": true
-		},
-		"SUPABASE_MANAGEMENT_ACCESS_TOKEN": {
-			"title": "Supabase Management Access Token",
-			"description": "Personal access token for Supabase Management API (used to create tables)",
-			"type": "string",
-			"isSecret": true
-		}
+		"PUBLIC_SUPABASE_URL": "@env:PUBLIC_SUPABASE_URL",
+		"PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY": "@env:PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY",
+		"SUPABASE_MANAGEMENT_ACCESS_TOKEN": "@env:SUPABASE_MANAGEMENT_ACCESS_TOKEN"
 	},
 	"meta": {
 		"templateId": "ts-empty",
