@@ -90,11 +90,6 @@ async function insertDatasetItems(supabase: SupabaseClient, jobId: string, datas
     }
 }
 
-function isMemoryError(run: { status: string; statusMessage?: string | null }): boolean {
-    const msg = (run.statusMessage ?? '').toLowerCase();
-    return run.status === 'FAILED' && (msg.includes('memory') || msg.includes('out of memory') || msg.includes('heap'));
-}
-
 async function runWithRetries(
     supabase: SupabaseClient,
     config: Configuration,
@@ -111,16 +106,26 @@ async function runWithRetries(
         try {
             run = await client.actor(config.actor_id).start(config.input);
         } catch (err) {
+            const errorMessage = (err as Error).message;
             log.error(`Failed to start actor ${config.actor_id} for configuration ${config.id}`, {
-                error: (err as Error).message,
+                error: errorMessage,
             });
-            // Insert a failed job record
+
+            const isMemErr = errorMessage.toLowerCase().includes('exceed the memory limit');
+
+            if (isMemErr && attempt < MAX_RETRIES) {
+                log.warning(`Start failed with memory error for configuration ${config.id}, will retry in 10s`);
+                await setTimeout(10_000);
+                continue;
+            }
+
+            // Insert a failed job record for non-retryable errors or final attempt
             await supabase.from('jobs').insert({
                 configuration_id: config.id,
                 status: 'FAILED',
                 started_at: new Date().toISOString(),
                 finished_at: new Date().toISOString(),
-                error: (err as Error).message,
+                error: errorMessage,
             });
             return;
         }
@@ -170,13 +175,6 @@ async function runWithRetries(
                 error: finishedRun.statusMessage ?? null,
             })
             .eq('id', job.id);
-
-        // If memory error and we have retries left, try again
-        if (isMemoryError(finishedRun) && attempt < MAX_RETRIES) {
-            log.warning(`Run ${run.id} failed with memory error, will retry in 10s`);
-            await setTimeout(10_000);
-            continue;
-        }
 
         // If succeeded, fetch and store dataset items
         if (finishedRun.status === 'SUCCEEDED' && finishedRun.defaultDatasetId) {
