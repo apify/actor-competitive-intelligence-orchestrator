@@ -173,7 +173,8 @@ async function runWithRetries(
 
         // If memory error and we have retries left, try again
         if (isMemoryError(finishedRun) && attempt < MAX_RETRIES) {
-            log.warning(`Run ${run.id} failed with memory error, will retry`);
+            log.warning(`Run ${run.id} failed with memory error, will retry in 10s`);
+            await new Promise((resolve) => setTimeout(resolve, 10_000));
             continue;
         }
 
